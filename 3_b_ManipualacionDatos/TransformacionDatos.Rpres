@@ -1,0 +1,386 @@
+Manipulación de datos
+========================================================
+author: Felipe Sodré Mendes Barros
+date: 02/11/2018
+autosize: true
+
+e-mail:  felipe.b4rros@gmail.com
+
+Contenidos
+========================================================
+Vamos usar una nueva librería llamada **dplyr**;
+Manipulación que haremos:
+- Filtrado de datos: función *filter()*;  
+- Reorganizar regístros: función *arrange()*;  
+- Seleción de variables (columnas) por nombre: función *select()*;  
+- Creación de nuevas variables a partir de variables existentes: función *mutate()*;  
+- Resumen de valores: función *summarise()*;  
+
+`r emo::ji("warning")` Estas funciones poseen la mismo sintaxis:  `r emo::ji("warning")`  
+
+1. Primero argumento es el dato (data.frame);  
+1. Segundo argumento describe que debe ser hecho con el dato;  
+1. El resultado será otro data.frame
+```{r setup, echo = FALSE}
+library(emo)
+library(tidyverse)
+```
+Instalación de las librerías
+========================================================
+En esta clase vammos usar las funciones de la librería **dplyr** y datos de vuelos de NY, disponibles en la librería **nycflights13**.  
+```{r, eval = FALSE}
+# Instalación librerías
+# install.packages("dplyr")
+library(dplyr)
+
+# Para ocupar datos de vuelos!
+# install.packages(nycflights13)
+library(nycflights13)
+
+# para los graficos
+library(ggplot2)
+```
+Vuelos
+========================================================
+El dato que vamos ocupar ya esta cargado en el obyecto flights de la librería **dplyr**.
+```{r, echo=FALSE}
+(flights <- nycflights13::flights)
+```
+Tibble
+========================================================
+Perciba que el objecto es distinto: **tibble**. Se trata de un *data.frame* con algunas facilidades.  
+Ej.: No hace falta usar la funcion *head()*, pues siempre presentará la cantidad reducida de datos.
+Además, trae info de las variables:  
+- int  
+- dbl
+- chr
+- dttm (date-times)
+- lgl (TRUE / FALSE)
+- fctr (categoricos)
+- date
+filter()
+==========================================================
+La función **filter()** como el proprio nombre deja claro, sirve para obtener un subconjunto del datos de entrada (primero argumento). El subconjunto será/n la/s expresion/es a seren aplicadas.
+Ej. Quiero trabajar con los vuelos del mes de febrero (2):
+```{r}
+dplyr::filter(flights, month == 2)
+```
+filter() II
+==========================================================
+Se puede agregar mas de una expresión a la función **filter()**:
+```{r}
+filter(flights, month == 2, day == 1)
+```
+Ejercícios I: filter()
+==========================================================
+Como sería el codigo para filtrar los vuelos que occurieron depúes de marzo y que el retrazo de llegada (*arr_delay*) fué mayor o igual a 5?
+Ejercícios I: resolución
+==========================================================
+```{r}
+filter(flights, month > 5, arr_delay >= 5)
+```
+Ejercícios II: filter()
+==========================================================
+Como sería el codigo para hacer un grafico de dispersión entre *arr_delay* (variable explicativa) y *dep_delay* (variable dependiente) de los vuelos con:  
+- *arr_delay* mayor que cero y
+- *dep_delay* mayor o igual a cero
+Ejercícios II: resolución
+==========================================================
+```{r}
+subconjunto <- filter(flights, arr_delay > 0, dep_delay >= 0)
+ggplot(data = subconjunto) +
+  geom_point(mapping = aes(x = arr_delay, y = dep_delay))
+```
+Expresiones
+==========================================================
+  
+-  == (igual)
+- != (diferente)
+- > (mayor que)
+- >= (mayor o igual que)
+- < (menor que)
+- <= (menor o igual que)
+
+Operadores lógicos
+==========================================================
+![](transform-logical.png)
+
+filter() y Operadores lógicos
+==========================================================
+`r emo::ji("warning")`  Perciba que al agregar las expresiones en distintos paremetros se ocupará la expresión 'y'.  
+Caso vaya ocupar operadores lógicos, hay que informar la variable siempre:
+```{r, eval=FALSE}
+filter(flights, month == 11 | month == 12)
+```
+Otra posiblidad es usar la expresión *%in%* cuando hay mas de un valor para la misma variabe:
+
+```{r, eval=FALSE}
+filter(flights, month %in% c(11, 12))
+```
+Ejercícios III: filter() operadores logicos
+=============================================================
+Graficar relación de retraso en la salida con los retrasos de llegada de vuelos con:
+  
+- llegada o partida mayor que 2 horas en el ano 2013;  
+Identificar:  
+- Vuelos para Houston (IAH o HOU);
+- Grafico de barras con la cantidad de vuelas de cada aeropuesto de Huston
+Ejercícios III: resolución 1
+=============================================================
+```{r}
+retrasos <- filter(flights, arr_delay > 120 | dep_delay > 120 & year == 2013)
+ggplot(retrasos, aes(x=arr_delay, y=dep_delay)) + 
+  geom_point()
+```
+Ejercícios III: resolución 2
+=============================================================
+```{r}
+huston <- filter(flights, dest %in% c("IAH", "HOU"))
+ggplot(data = huston, aes(x= dest)) +
+  geom_bar()
+```
+arrange()
+==============================================================
+Ordena las líneas según valores de las columnas.
+*order by*
+Ej.: Ordenando los datos por año, mes y hora de llegada.
+```{r}
+arrange(flights, year, month, arr_time)
+```
+arrange()
+==============================================================
+Caso quiera inverter el orden, se puede usar la función *desc()* para decresciente;
+Ej.: Ordenando los datos por año, mes y hora de llegada, siendo las ultimas horas primero.
+```{r}
+arrange(flights, year, month, desc(arr_time))
+```
+Ejercícios IV: arrange()
+===============================================================
+Identifique los vuelos:  
+- con mayor retraso;
+- con salida mas temprana;
+- vuelos con menos tiempo en el aire
+Valores desconocidos: NA
+===============================================================
+En la función *arrange()* los valores *NA* estarán siempre por último, ya que no posee orden.
+Vale la pena aclarar. Valores desconocidos, poseen características particulares:
+Cales son lso resultados de estos codigos?
+```{r, eval = FALSE}
+NA > 5
+10 == NA
+NA + 10
+NA / 2
+NA == NA
+```
+Si querés usar operador logico con valores NA, se debe usar *is.na()*:
+```{r}
+is.na(NA)
+```
+select()
+==========================================================
+La función **select()** sirve para selecionar un subconjunto de las variables (columnas) de los datos trabajados.  
+Por ejemplo, si queremos trabajar apenas con las variables *year*, *day* y *month*, haríamos:
+```{r, eval=FALSE}
+# select() subset columns
+select(flights, year, day, month)
+```
+Select() II
+==========================================================
+Si necesitas remover una variables, también se puede usar la función **select()**, pero con guion antes de la variables a ser removida:
+```{r, eval=FALSE}
+# removendo year
+select(flights, -year)
+# removendo year y day
+select(flights, -year, -day)
+```
+Ejecícios V: select()
+===========================================================
+Como podríamos selecionar las variables:
+- dep_time
+- dep_delay
+- arr_time 
+- arr_delay
+Ejecícios V: resolución
+===========================================================
+```{r}
+select(flights, dep_time, dep_delay, arr_time, arr_delay)
+```
+mutate()
+=============================================================
+La función **mutate()** permite crear nuevas columnas que recibirán valores relacionados a una variable ya exitente.  
+Como las columnas creadas quedan al fin del data.frame, antes vamos crear un data.frame mas chico.
+```{r}
+flights_mutate <- select(flights, 
+                      year:day, 
+                      distance, 
+                      air_time)
+mutate(flights_mutate,
+       hours = air_time / 60 # hours va a ser el nombre de la variable
+       # el valor adicionadoa  esa variable va a ser
+       #el valor de air_time dividido por 60
+)
+```
+mutate() II
+===========================================================
+Otra función importante de **mutate()** es la posibilidad de crear una nueva columna en base a otra que también esta en proceso de creación.  
+```{r}
+mutate(flights_mutate,
+       hours = air_time / 60,
+       speed = distance / hours
+)
+```
+transmute()
+================================================================
+Caso tengas interés en quedarse apenas con las variables creadas se puede usar a function **transmute()**.  
+Ej.:
+```{r}
+transmute(flights_mutate,
+       hours = air_time / 60,
+       speed = distance / hours
+)
+```
+Ejercícios VI: mutate()
+=======================================================================
+La variable distance esta en milias.  
+Crea una nueva variable que contenga la disntancia en Km
+obs: 1mi = 1.61Km
+Ejercícios VI: resolución
+=======================================================================
+```{r, eval=FALSE}
+colnames(flights)
+t <- mutate(flights,
+       distanceKm = distance * 1.61)
+select(t, distance, distanceKm)
+```
+summarize()
+=========================================================================
+Aplica una función matematica/estadística a un conjunto de datos resumiendo en una línea.
+Ej.: promedio de retrasos de salida
+```{r}
+# Summarise
+summarise(flights, delay = mean(dep_delay, na.rm = TRUE)) # repare en el na.rm = remove NA
+```
+summarize() + group_by()
+===========================================================================
+summarize es mejor utilizado cuando se utiliza también la función **group_by()**.  
+La función **group_by()** cambia las unidades de análisis de todo el conjunto de datos a los grupos formados.  
+Ej.: Analisando el promedio agrupado por año, mes y día
+
+```{r}
+by_day <- group_by(flights, year, month, day)
+summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
+```
+group_by + summarize() II
+========================================================================
+Cuando se crea grupo con mas de una variables, a cada resumo (**summarize()**) se sube un nivel del grupo, lo que permite hacer calculos progresivos.
+```{r, eval = FALSE}
+# Grupos con mas de una variable
+daily <- group_by(flights, year, month, day)
+(per_day   <- summarise(daily, flights = n()))
+
+(per_month <- summarise(per_day, flights = sum(flights)))
+
+(per_year  <- summarise(per_month, flights = sum(flights)))
+```
+
+Ejercícios VI: summarize() + group_by()
+==========================================================================
+  
+- Crea un grafico de linea con el retraso promedio por mes de cada compañia
+- Cual es el destino (*dest*) con mayor promedio de retraso de llegada?
+- Cual es la compania con mas vuelos?
+- Como sería un grafico de linea con el promedio de retrasos (llegada o salida, vos elijis :) por mes?
+Ejercícios VI: resolución 1
+==========================================================================
+```{r}
+carrier <- group_by(flights, year, month, carrier)
+carrier <- summarise(carrier, delay = mean(dep_delay, na.rm = TRUE))
+ggplot(carrier, aes(x = month, y=delay, colour = carrier)) +
+  geom_line()
+```
+Ejercícios VI: resolución 2
+==========================================================================
+```{r}
+dest <- group_by(flights, dest)
+summarise(dest, delay = mean(arr_delay, na.rm = TRUE))
+```
+Ejercícios VI: resolución 3
+==========================================================================
+```{r}
+vuelos <- group_by(flights, carrier)
+summarise(vuelos, count = n())
+```
+Ejercícios VI: resolución 2
+==========================================================================
+```{r}
+bymonth <- group_by(flights, year, month)
+resumen <- summarise(bymonth, delay = mean(dep_delay, na.rm = TRUE))
+ggplot(resumen, aes(x = month, y=delay)) +
+  geom_line()
+```
+Desafío!
+=========================================================================
+Vamos analisar la solucion del primero punto del ultmo ejercício.  
+En él, tuvimos que usar:
+Perciba que para esta tarea tenemos que usar:
+- group_by()
+- summarize()
+
+Y que para cada transformación asginamos el resultado a un obyecto, sendo que los resultados intermediarios no nos conviene.
+Haríamos así:
+```{r, eval = FALSE}
+carrier <- group_by(flights, year, month, carrier)
+carrier <- summarise(carrier, delay = mean(dep_delay, na.rm = TRUE))
+ggplot(carrier, aes(x = month, y=delay, colour = carrier)) +
+  geom_line()
+```
+pipe!
+=========================================================================
+![](pipe.jpg)
+Los pipes **%>** nos permiten crear una cadena funciones sin hacer falta nombrar o renombrarlos a cada transformación.
+Ej.:
+```{r}
+carrier <- group_by(flights, year, month, carrier) %>%
+  summarise(delay = mean(dep_delay, na.rm = TRUE))
+  
+ggplot(carrier, aes(x = month, y=delay, colour = carrier)) +
+  geom_line()
+```
+pipe II
+=================================================================
+Con eso uno puede preocuparse con las transformación de los datos.
+**%>%** puede ser leido como **entonces**.
+Se puede resumir así:
+- x %>% f(y) = f(x, y)
+- x %>% f(y) %>% g(z) = g(f(x, y), z)
+
+Se puede leer de la izquierda para la derecha o desde arriba hacia abajo.
+
+Ejercicios VII: pipe
+=======================================
+  
+- Cual avión (tailnum) tiene el peor promedio de retraso de salida?
+- Cuales destinos reciben mas vuelos?
+- Para cada avión, cuente cuantos vuelos tienen con retraso menores que 100;  
+Ejercicios VII: resolución I
+=======================================
+```{r}
+retrasados <- group_by(flights, tailnum) %>%
+  summarise(meanDelay = mean(arr_time, na.rm = TRUE)) %>%
+  arrange(desc(meanDelay))
+```
+Ejercicios VII: resolución
+=======================================
+```{r}
+destinos <- group_by(flights, dest) %>%
+  summarise( count = n()) %>%
+  arrange(desc(count))
+```
+Ejercicios VII: resolución
+=======================================
+```{r}
+destinos <- group_by(flights, tailnum) %>%
+  filter(dep_time < 100) %>% 
+  summarise( count = n()) %>%
+  arrange(desc(count))
+```

@@ -1,0 +1,72 @@
+RMarkdown
+========================================================
+author: Felipe Sodré Mendes Barros
+date: 02/11/2018
+autosize: true
+
+e-mail:  felipe.b4rros@gmail.com
+
+De qué se trata?
+========================================================
+
+Se trata de la mezcla del lenguaje **Markdown** con **R**.
+Nos permite crear de forma facilitada documentos de comunicación, como:  
+- Presentación
+- Textos/informes
+
+Ventajas
+========================================================
+Las ventajas en usar-lo son:
+- Reproducibilidad;
+- Permite presentar el código usado
+- Permite agregar comentarios
+- Puede ser usado de forma colaborativo (versionamiento)
+
+Instalación
+========================================================
+Para usarlo hace falta instalar la librería *rmarkdown*.  
+A su vez, *rmarkdown* va instalar otras librerias importantes:
+```{r, eval=FALSE}
+# instalando
+# install.packages("rmarkdown")
+library(rmarkdown)
+```
+Crearción de documentos
+=========================================================
+Algunos puntos basicos:
+- La extension es .Rmd (*markdown* ocupa solo .md);
+- Hay tres elementos en los documentos:
+  - Encabezado de configuración (empieza y termina con  - - - )
+  - Pedazos de código (*code chunk*) (empieza y termina con   ' ' ' )
+  - El texto en sí con lenguaje markdown (afuera de cualquier marcación);
+Proceso de produción del informe
+==========================================================
+Cada pedazo de código puede ser ejecutado para ya tener el resultado mientras uno escribe (y de paso certifica que el resultado es el esperado).  
+
+A cualquier momento que uno quiera, se puede ejecutar todo el escript para visualizar el informe final.
+
+Ejercício I
+==========================================================
+  
+1. Crear un Rmarkdown y ejecutar todo el codigo;  
+1. Ejecutar el mismo codigo pero para distintos formatos;
+1. Hacer cambios en el codigo;
+1. Hacer cambios en el texto;
+1. Cambiar el titulo;  
+
+Infos general:
+===========================================================
+Se pude (y debe) adicionar nombre a cada pedazo de código:  
+Ventajas:
+- Se hace mas facil navegar por el script;
+- Identificar error;  
+
+Algunas opciones de los code chunks:
+  
+- eval = FALSE
+- include = FALSE - ejecuta pero no presenta el codigo ni los resultados;
+- echo = FALSE - No presenta el codigo pero lo ejecuta
+
+Inline code
+===========================================================
+\\\`\r min(mtcars$mpg)\\\`
