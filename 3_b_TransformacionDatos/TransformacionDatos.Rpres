@@ -1,0 +1,207 @@
+Transformacion de datos
+========================================================
+author: Felipe Sodré Mendes Barros
+date: 02/11/2018
+autosize: true
+
+e-mail:  felipe.b4rros@gmail.com
+
+Contenidos
+========================================================
+Vamos usar una nueva librería llamada **dplyr**;
+Manipulación que haremos:
+- Filtrado de datos: función *filter()*;  
+- Reorganizar regístros: función *arrange()*;  
+- Seleción de variables (columnas) por nombre: función *select()*;  
+
+`r emo::ji("warning")` Estas funciones poseen la mismo sintaxis:  `r emo::ji("warning")`  
+
+1. Primero argumento es el dato (data.frame);  
+1. Segundo argumento describe que debe ser hecho con el dato;  
+1. El resultado será otro data.frame
+```{r setup, echo = FALSE}
+library(emo)
+library(tidyverse)
+```
+
+Instalación de las librerías
+========================================================
+En esta clase vammos usar las funciones de la librería **dplyr** y datos de vuelos de NY, disponibles en la librería **nycflights13**.  
+```{r, eval = FALSE}
+# Instalación librerías
+# install.packages("dplyr")
+library(dplyr)
+
+# Para ocupar datos de vuelos!
+# install.packages(nycflights13)
+library(nycflights13)
+
+# para los graficos
+library(ggplot2)
+```
+Vuelos
+========================================================
+El dato que vamos ocupar ya esta cargado en el obyecto flights de la librería **dplyr**.
+
+```{r, echo=FALSE}
+(flights <- nycflights13::flights)
+```
+Tibble
+========================================================
+Perciba que el objecto es distinto: **tibble**. Se trata de un *data.frame* con algunas facilidades.  
+Ej.: No hace falta usar la funcion *head()*, pues siempre presentará la cantidad reducida de datos.
+Además, trae info de las variables:  
+- int  
+- dbl
+- chr
+- dttm (date-times)
+- lgl (TRUE / FALSE)
+- fctr (categoricos)
+- date
+filter()
+==========================================================
+La función **filter()** como el proprio nombre deja claro, sirve para obtener un subconjunto del datos de entrada (primero argumento). El subconjunto será/n la/s expresion/es a seren aplicadas.
+Ej. Quiero trabajar con los vuelos del mes de febrero (2):
+```{r}
+filter(flights, month == 2)
+```
+filter() II
+==========================================================
+Se puede agregar mas de una expresión a la función **filter()**:
+```{r}
+filter(flights, month == 2, day == 1)
+```
+Ejercícios I: filter()
+==========================================================
+Como sería el codigo para filtrar los vuelos que occurieron depúes de marzo y que el retrazo de llegada (*arr_delay*) fué mayor o igual a 5?
+Ejercícios I: resultados
+==========================================================
+```{r}
+filter(flights, month > 5, arr_delay >= 5)
+```
+Ejercícios II: filter()
+==========================================================
+Como sería el codigo para hacer un grafico de dispersión entre *arr_delay* (variable explicativa) y *dep_delay* (variable dependiente) de los vuelos con:  
+- *arr_delay* mayor que cero y
+- *dep_delay* mayor o igual a cero  
+Ejercícios II: resultado
+==========================================================
+```{r}
+subconjunto <- filter(flights, arr_delay > 0, dep_delay >= 0)
+ggplot(data = subconjunto) +
+  geom_point(mapping = aes(x = arr_delay, y = dep_delay))
+```
+Expresiones
+==========================================================
+  
+-  == (igual)
+- != (diferente)
+- > (mayor que)
+- >= (mayor o igual que)
+- < (menor que)
+- <= (menor o igual que)
+
+Operadores lógicos
+==========================================================
+![](transform-logical.png)
+
+filter() y Operadores lógicos
+==========================================================
+`r emo::ji("warning")`  Perciba que al agregar las expresiones en distintos paremetros (usando coma) se ocupará la expresión 'y'.  
+Caso vaya ocupar otros operadores lógicos, hay que informar la variable siempre:
+```{r, eval=FALSE}
+filter(flights, month == 11 | month == 12)
+```
+Otra posiblidad es usar la expresión *%in%* cuando hay mas de un valor para la misma variabe:
+
+```{r, eval=FALSE}
+filter(flights, month %in% c(11, 12))
+```
+Ejercícios III: filter() operadores logicos
+=============================================================
+Crear un grafico de dispersión entre retraso en la salida con los retrasos de llegada de los vuelos con:
+  
+- llegada o partida mayor que 2;  
+- Vuelos para Houston (IAH o HOU);  
+- Grafico de barras con la cantidad de vuelos de cada aeropuesto de Huston  
+Ejercícios III: resultado 1
+=============================================================
+```{r}
+retrasos <- filter(flights, arr_delay > 120 | dep_delay > 120 & year == 2013)
+ggplot(retrasos, aes(x=arr_delay, y=dep_delay)) + 
+  geom_point()
+```
+Ejercícios III: resultado 2
+=============================================================
+```{r}
+huston <- filter(flights, dest %in% c("IAH", "HOU"))
+ggplot(data = huston, aes(x= dest)) +
+  geom_bar()
+```
+arrange()
+==============================================================
+Ordena las líneas según valores de las columnas.
+*order by*
+Ej.: Ordenando los datos por año, mes y hora de llegada.
+```{r}
+arrange(flights, year, month, arr_time)
+```
+arrange()
+==============================================================
+Caso quiera inverter el orden, se puede usar la función *desc()* para decresciente;
+Ej.: Ordenando los datos por año, mes y hora de llegada, siendo las ultimas horas primero.
+```{r}
+arrange(flights, year, month, desc(arr_time))
+```
+Ejercícios IV: arrange()
+===============================================================
+Identifique los vuelos:  
+- con mayor retraso;
+- con salida mas temprana;
+- vuelos con menos tiempo en el aire
+- vuelos con menos tiempo pero con mayor tiempo de retraso
+Valores desconocidos: NA
+===============================================================
+En la función *arrange()* los valores *NA* estarán siempre por último, ya que no posee orden.
+Vale la pena aclarar. Valores desconocidos, poseen características particulares:
+Cales son los resultados de estos codigos?
+```{r, eval = FALSE}
+NA > 5
+10 == NA
+NA + 10
+NA / 2
+NA == NA
+```
+Si querés usar operador logico con valores NA, se debe usar *is.na()*:
+```{r}
+is.na(NA)
+```
+select()
+==========================================================
+La función **select()** sirve para selecionar un subconjunto de las variables (columnas) de los datos trabajados.  
+Por ejemplo, si queremos trabajar apenas con las variables *year*, *day* y *month*, haríamos:
+```{r, eval=FALSE}
+# select() subset columns
+select(flights, year, day, month)
+```
+Select() II
+==========================================================
+Si necesitas remover una variables, también se puede usar la función **select()**, pero con guion antes de la variables a ser removida:
+```{r, eval=FALSE}
+# removendo year
+select(flights, -year)
+# removendo year y day
+select(flights, -year, -day)
+```
+Ejecícios V: select()
+===========================================================
+Como podríamos selecionar las variables:
+- dep_time
+- dep_delay
+- arr_time 
+- arr_delay  
+Ejecícios V: resultado
+===========================================================
+```{r}
+select(flights, dep_time, dep_delay, arr_time, arr_delay)
+```

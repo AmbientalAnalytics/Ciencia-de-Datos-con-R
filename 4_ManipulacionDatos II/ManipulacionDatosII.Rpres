@@ -1,0 +1,240 @@
+Manipulacion de Datos II
+========================================================
+author: Felipe Sodré Mendes Barros
+date: 06/11/2018
+autosize: true
+
+e-mail: felipe.b4rros@gmail.com
+
+Programa
+========================================================
+En esta clase vamos seguir trbajando con manipulación de datos, pero de esta vez, vamos enfocar en la organización de los mismos.
+Para eso, vamos ocupar la librería *tidyr* que hace parte de los paquetes de *tidyverse*.  
+La organización de datos es un elemento importante ya que no es siempre que los datos disponibles están bien estructurados para el uso en nuestras análisis.  
+Caso tengas interés en conocer los fundamentos tecnicos, sugerimos [este articulo]( http://www.jstatsoft.org/v59/i10/paper).
+```{r}
+# Instalando la librería
+# install.packages("tidyr")
+library(tidyr)
+library(ggplot2) # vamos hacer graficos \0/
+
+```
+Tres reglas de organización
+========================================================
+Para que el conjunto de dato sea facil de manipular, necesitamos que:
+  
+- Cada variable tenga su propria columna;
+- Cada observación tenga su propria linea;
+- Cada valor tenga su propria celda;
+
+![](./img/tidy-1.png)
+Benefícios
+========================================================
+`r emo::ji("warning")` Con eso estamos asegurando una estructura de datos consistente, lo que hace ractico trabarlo ya que posee uniformidad de estructura.  
+
+`r emo::ji("warning")` Tener las variables en columnas permite manipular dichas variables y observaciones, tal cual hicimos en las clases anteriores con **mutate()** y **summarize()**
+Ejemplo
+========================================================
+La librería **tydr** ya trae algunos ejemplos de datos.
+Como ejemplo de dato bien organizado, tenemos:
+```{r}
+table1
+```
+Ejemplo II
+========================================================
+Pero ni siempre los datos están bien estructurados.
+Hay multiples motivos para eso, de los cuales:
+  
+- La mayoría de las personas que producen datos, no están preocupadas con las análisis;
+- Los datos son generalmente organizados para facilitar su obtención y no es siempre que se piensa en facilitar la análisis.
+
+De los ejemplos de la librería **tydr**, hay algunos estruturados de una forma que facilita su manipulación/transformación:
+```{r}
+table3
+```
+Restruturando datos:
+==========================================================
+Cuando nos encontramos con datos estructurados de forma distinta a la estructura propuesta, es común tenermos que reorganizarlos:
+
+1. Cambiar el nombre de la variable valor/categoria de las observaciones
+1. Separando una variable en distintas columnas;
+1. Separar una observación en distintas líneas;
+
+Para estos casos, vamos usar las funciones **gather()** y **spead()**.
+gather()
+===========================================================
+Vamos usar como ejemplo la planilla *table4a*:
+En este caso tenemos como variable valores que deberían estar en una variable "year" o "año".
+```{r}
+table4a
+```
+gather(): ejemplo
+============================================================
+Para estos casos vamos usar la función **gather()** para transformar estos valores en nuevas variables con sus respectivos valores.
+![](./img/tidy-9.png)
+gather() II
+============================================================
+Para la función **gather()** necesitamos tres parametros:
+  
+- Nombre de las columnas que en realidad representan valores;
+- El parametro *key* se refiere al a ser dado a la variable que va a recibir estos valores (en este caso, lo estoy nombrando de "year");  
+- El parametro *value* se refiere al nombre a ser dado a la variable que va a recibir los valores que están en las celdas (en este caso, lo estoy nombrando de "cases").
+```{r}
+table4a %>% 
+  gather("1999", "2000", key = "year", value = "cases")
+```
+gather(): resultado
+============================================================
+Perciba que las dos variables que teníamos son removidas dando espacio a "year" y "cases" que posee su relación a las observaciones garantizadas( o mantenidas).
+![](./img/gather.gif)
+gather(): Ejercício I
+=============================================================
+Ocupanda el objecto "table4b", haga la transformación necesaria para que cada variable esten en una columnas e sus valores en las respectivas celdas.  
+`r emo::ji("warning")` Los valores armazenados en este data.frame es correspondiente a populación.
+```{r}
+table4b
+```
+spread()
+==================================================================
+La función **spread** hace lo opuesta a la función **gather()**.
+Se rá util cuando las observaciones esteen divididas en distintas líneas, como por ejemplo en la *table2*:
+  
+- Las variables "cases" y "population" (que están divididas en distintas líneas) deberían estar como distintas variables con sus respectivos valores.
+![](./img/tidy-8.png)  
+
+spread(): Ejemplo
+==================================================================
+```{r}
+table2
+```
+spread(): Resultado
+==================================================================
+Para hacer la manipulación necesaria, vamos usar la función **spread()**, la cual necesita dos parametros:
+
+- El parametro *key* de esta función deberá informar las columnas que contenga los nombres de las variables a seren creadas (en este caso "type");
+- El parametro *value* de esta función deberá informar las columnas que contengan los valores a seren adicionado a dichas variables (en este caso "count");
+```{r}
+table2 %>%
+    spread(key = type, value = count)
+```
+spread(): Ejercício II
+===================================================================
+Usando la planilla *"AccidentesBicicletas_2017_TipoPersona2.csv"* disponible en la carpeda *./datos*, como haría para que los valores de vitmas de los distintos tipos de personas queden como variables distintas?
+```{r}
+TipoPersona <- read.csv("./datos/AccidentesBicicletas_2017_TipoPersona.csv")
+head(TipoPersona)
+```
+spread(): resolución
+==================================================================
+```{r}
+TipoPersona %>%
+  spread(TIPO.PERSONA, value = VITIMAS)
+```
+gather y spread(): resumen
+===================================================================
+![](./img/tidyr-spread-gather.gif)
+gather y spread(): Ejercício III
+===================================================================
+Considerando la planilla *"AccidentesBicicletas_2017_Sexo.csv"* que figura en la carpeta *./datos*:
+  
+- como la ajustaría a un data.frame bien estructurado?  
+- Se debe usar *spread()* o *gather()*?  
+- Como quedaría el codigo?  
+- Y como hacer un grafico de barras que nos permita identificar, a cada categoría de accidente, la proporción acuerdo al sexo de las vítimas.  
+
+```{r}
+bici <- read.csv("./datos/AccidentesBicicletas_2017_Sexo.csv", sep = ";")
+head(bici)
+```
+gather y spread(): resolucion
+=====================================================================
+
+```{r}
+bici %>%
+  gather("HOMBRE", "MUJER", "NO.ASIGNADO", key = "SEXO", value="Vitimas") %>%
+  ggplot(aes(x = TIPO.ACCIDENTE, y=Vitimas, fill = SEXO)) +
+    geom_bar(stat="identity")
+```
+separando y uniendo
+=======================================================================
+Otras dos operaciónes muy comunes son la separación de determiando valor en otras variables o la unión de dos o más variables en una.
+Para ejemplificar, vamos trabajr con "table3". Perciba que la variable *"rate"*, en realidad, posee dos variables (*cases* y *población*) concatenadas, separadas por un elemento común a todas las observaciones (en este caso *"/"*).
+```{r}
+table3
+```
+separate()
+=======================================================================
+La función **separate()** hace justamente lo que necesitamos: separa los valores de una variable a partir de un elemento separador. La función lleva dos parámetros:
+  
+- El nombre de la variable con los valores a seren separados;
+- El parametro "*into*", que recibe los nombre de las variables a seren creadas con los valores separados.  
+separate(): Ejemplo
+=======================================================================
+![](./img/tidy-17.png)
+separate(): Resultado
+=======================================================================
+`r emo::ji("warning")` esta función está basada en expresiones regulares, basada en elementos no alfanumeircos (que no sean numeros ni letras). Vea el *help* para mas informaciones
+```{r}
+table3 %>% 
+  separate(rate, into = c("cases", "population"))
+```
+separate(): Ejercício IV
+===============================================================
+Considerando la planilla *"AccidentesBicicletas_2017_fecha.csv"* que figura en la carpeta *./datos*:
+  
+- Hacer un gráfico con las proporciones de accidentes por día. 
+    - Cual día ocurieró más accidentes?
+    - Cual fué el tipo de accidente más común en dicho día?
+- Hacer un grafico con las proporciones de accidentes por mes. 
+    - Cual mes ocurieró más accidentes?
+    - Cual fué el tipo de accidente más común en dicho mes?
+separate(): Resolución
+===============================================================
+```{r, eva = FALSE}
+fechas <- read.csv("./datos/AccidentesBicicletas_2017_fecha.csv", sep = ";")
+fechas <- fechas %>%
+  separate(FECHA, into = c("Día", "Mes", "Ano"))
+
+ggplot(fechas, aes(x = Día, fill = TIPO.ACCIDENTE)) + geom_bar()
+ggplot(fechas, aes(x = Mes, fill = TIPO.ACCIDENTE)) + geom_bar()
+```
+unite()
+================================================================
+Como usted debe imaginar, la functión **unite()** hace el inverso de la functión **separate()**.  
+La función lleva tres parámetros mínimos:
+  
+- El nombre de la nueva variable a ser creada uniendo las otras variables.  
+- Los nombres de las variables e seren unidas;
+
+unite(): Ejemplo
+================================================================
+`r emo::ji("warning")` Un otro parametro que suele interesar es el parametro "*sep*", que por defecto esta como "_". Caso no quiera que figure ningún separador regular, basta usar *sep = ""*. Como en la figura de ejemplo.
+![](./img/tidy-18.png)
+unite(): Ejercício V
+================================================================
+En base a la planilla modificada en el ejercício anterior:
+  
+- Hacer un grafico de línea con el promedio de accidente por mes basandose en una categoria nueva TIPO.DE.PERSONA + SEXO
+unite(): Resolución
+===============================================================
+```{r}
+fechas %>%
+  unite(nuevaCat, TIPO.PERSONA, SEXO) %>%
+  ggplot(aes(x = Mes, fill = nuevaCat)) + geom_bar()
+```
+Ejercícios de revisión
+================================================================
+El la librería que estamos usando, hay un conjunto de datos bien interesante de la Organización Mundial de la Salud (en inglés, World Health Organization), relacionado a casos de Tuberculosis.
+Se trata de un caso bien típico de dato: con bastante información a ser manipulada u transformada antes de analisar.
+No hace falta conocer todo el conjuntod e dto, pero yacreo que podemos considerar:
+  
+- Las variables (*new_sp_m014*, *new_ep_m014*, *new_ep_f014*, ...) deben ser valores y no variables;  
+- Las celdas la contaje de casos;
+
+Como harías para organizar este dato de una mejor estructura?
+
+```{r}
+tail(who)
+colnames(who)
+```
+
