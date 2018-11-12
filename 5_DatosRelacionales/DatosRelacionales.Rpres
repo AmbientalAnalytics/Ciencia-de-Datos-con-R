@@ -229,7 +229,24 @@ flights %>%
 Ejercícios V
 ================================================================
   
-1. Cuales vuelos fueron hechos con aeronaves que tengan más de cien vuelos?
+1. Considerando las avións que hicieron más de 400 vuelos en 2013, cuantos y cuales fabricantes son responsables? Cuantos aviónes cada un de ellos fabricó en este subconjunto?
+1. Cuantas y cuales fabricantes no están representados en en subconjunto anterior? Y cuantos aviónes ellos producieron?
+```{r, eval=FALSE, echo=FALSE}
+Top_planes <- flights %>% 
+  count(tailnum) %>% 
+  filter(n>400) %>% arrange(desc(n))
+ 
+topManu <- planes %>% semi_join(Top_planes, "tailnum") %>% 
+  select(tailnum, year, type, manufacturer) %>% 
+  group_by(manufacturer) %>% 
+  summarise(count = n())
+
+planes %>% anti_join(topManu, "manufacturer") %>% 
+  select(tailnum, year, type, manufacturer) %>% 
+  group_by(manufacturer) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count))
+```
 1. Que dicen los codigos abajo:
 
 ```{r, eval=FALSE}
