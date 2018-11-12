@@ -9,21 +9,22 @@ e-mail: felipe.b4rros@gmail.com
 Programa
 ========================================================
 Es muy común en el universo de análisis de datos, trabajar con datos que en realidad están compuestos de dos o más tablas de forma que dichas se relacionen;  
-A estos datos, llamamos de datos relacionales y son muy comúnes al tabajar con Sistemas de Base de Datos;  
+A estos datos, llamamos de datos relacionales y son muy comunes al tabajar con Sistemas de Base de Datos;  
 ![](./img/relational-nycflights.png)
 
 Datos relacionales
 ===========================================================
 Para estos casos existen funciones específicas para trabajar los datos:
   
-1. **Mutating joins**, los cuales adicionan nuevas variables a un data.frame a partir de un campo correspondiente (Identificador único; ID/key) en ambasa planillas;  
-1. **Filtering joins**, filtran observaciones de un data.frane basado en el hecho de haber una otra observación corespondiente en otra tabla.
-1. **Set operations**, which treat observations as if they were set elements.
+1. **Mutating joins**, los cuales adicionan nuevas variables a un data.frame a partir de un campo correspondiente (Identificador único/ID/key) en ambas planillas;  
+1. **Filtering joins**, filtran observaciones de un data.frame basado en el hecho de haber una otra observación corespondiente en otra tabla.
+1. **Set operations**, **POR HACER** which treat observations as if they were set elements.
 
 Paquetes
 =============================================================
-Vamos usar los datos de vuelos novamente. El paquete *nycflights13* posee cuatra tablas que puedes ser relacionadas a partir de un identificador unico (o ID/key);  
-El paquete *tidyverse* en realidad instala y carga todas las 
+Vamos usar los datos de vuelos novamente. El paquete *nycflights13* posee cuatro tablas que pueden ser relacionadas a partir de un identificador unico (ID/key);  
+  
+El paquete *tidyverse* en realidad instala y carga todas las librerias que estuvimos usando: *ggplot2*, *tibble*, *tidyr*, etc.
 ```{r}
 # install.packages('tidyverse')
 library(tidyverse)
@@ -43,12 +44,12 @@ Y busque identificar como podrías relacionar dichar tablas con la tabla *flight
 
 Diagrama de relaciones
 ================================================================
-Volviendo a la la imágen de la primera filmina, que nos presente un **diagrama de relaciones**, lo podemos interpretar:  
+Volviendo a la imagen de la primera filmina, que nos presente un **diagrama de relaciones**, lo podemos interpretar:  
   
-- **flights** se relaciona con **planes** por una variable, la **tailnum**;
+- **flights** se relaciona con **planes** por una variable: la **tailnum**;
 - **flights** se relaciona con **airlines** a partir de la variable **carrier**;  
 - **flights** se relaciona con **airports** de dos formas: 
-    - Por la variable **origin**;
+    - por la variable **origin**;
     - y por la variable **dest**;  
 - **flights** se relaciona con **weather** por:  
     - la variable **origin** (the location);
@@ -56,38 +57,39 @@ Volviendo a la la imágen de la primera filmina, que nos presente un **diagrama 
     
 Keys
 ===========================================================
-Las variables de identificación unica, tabién son llamadas de **key**, y generalmente si diferencia:
+Las variables de identificación unica, tabién son llamadas de **key**, y generalmente si diferencia entre:
   
 - **Primary key**: que es la variable de identificación única en la tabla de observaciones (o principal). Ej.: `planes$tailnum`;
-- **Foreing Key**: es la variable de identificaicón unica presente en otra tabla, permitiendo hacer a relación entre las observaciones. Ej.: `flights$tailnum`
+- **Foreing Key**: es la variable de identificaicón única presente en otra tabla, permitiendo hacer a relación entre las observaciones. Ej.: `flights$tailnum`
 
 Ejercício II
 =============================================================
 La idea de la **llave primaria** es identificar unicamente una observación.  
   
 1. Confirme si la tabla `planes` posee mas de una observación con el mismo valor de su llave primaria;
-1. Cual sería la variable o las variables de identificación unica de la table `flights`?
-1. Dibuje un diagrama de relaciones de la tabla `diamonds` (disponible en el paquete ggplot2); Se trata de una planilla única pero se podría dividir en distintas planillas relaciones. Como sería eso?
+1. Cual sería la variable o las variables de identificación unica de la tabla `flights`?
+1. Dibuje un diagrama de relaciones de la tabla `diamonds` (disponible en el paquete ggplot2); Se trata de una planilla única pero se podría dividir en distintas planillas relacionales. Como sería eso?
 ```{r, eval=FALSE, echo=FALSE}
 planes %>% 
   count(tailnum) %>% 
   filter(n>1)
 ```
+
 Mutating join
 ================================================================
 Mutating join agregará al fin de la tabla (data.frame) variables de otra tabla, a partir de una variable llave.  
   
-`r emo::ji("warning")`Pero hay distintas ofrmas de hace el "join".
+`r emo::ji("warning")`Pero hay distintas ofrmas de hace dicho "join".
   
 Vamos ver algunos ejemplos:  
-![](./img/join-setup.png)  
 `r emo::ji("warning")`En color están las variables llave y en gris sus valores.
+
 inner_join()
 ==================================================================
 **inner_join()** es la forma de join mas simples y irá retornar las observaciones siempre que las variables llave se emparejen;
   
-`r emo::ji("warning")` Las observaciones que no emparejen son excluidas del resultado final. `r emo::ji("warning")`
- Por eso, inner_join no es muy común su uso ya que, se hace facil perder observaciones (y a los desavisados, no percibir).
+`r emo::ji("warning")` Las observaciones que no emparejan son excluidas del resultado final. `r emo::ji("warning")`  
+Por eso, no es un tipo de fusión recomendad ya que se hace facil perder observaciones (y los desavisados suelen no percibir).  
 ```{r}
 flights %>% 
   select(year:day, hour, tailnum, carrier) %>% 
@@ -98,9 +100,9 @@ outer join
 ==================================================================
 Son  tipos de "join" que mantinen las observaciones de una de las tablas. Hay distintas funciones de este tipo:
   
-- left_join(): Mantiene todas las observaciones de la tabla `x`. Y caso no haja observación respectiva en otra tabla, la observación quedará con `NA`;
-- right_join(): Mantiene todas las observaciones de la tabla `y`. Y caso no haja observación respectiva en otra tabla, la observación quedará con `NA`;
-- full_join(): Mantiene todas las observaciones de ambas tablas (`x` e `y`). Y caso no haja observación respectiva en otra tabla, la observación quedará con `NA`;
+- **left_join()**: Mantiene todas las observaciones de la tabla a a izquierda de lafunción join (`x`). Y caso no haja observación respectiva en otra tabla, la observación quedará con `NA`;
+- **right_join()**: Mantiene todas las observaciones de la tabla a la derecha de la función (`y`). Y caso no haja observación respectiva en `X`, la observación quedará con `NA`;
+- **full_join()**: Mantiene todas las observaciones de ambas tablas (`x` e `y`). Y caso no haja observación respectiva en otra tabla, la observación quedará con `NA`;
 
 Ejemplos
 ==================================================================
@@ -110,11 +112,12 @@ flights %>%
   select(year:day, hour, tailnum, carrier) %>% 
     left_join(airlines, by = "carrier")
 ```
+
 Ejercicio III
 ==================================================================
 
 1. Agregar la velocidad (**speed**) de la aeronave (**planes**) en la tabla flights?
-1. Crea un grafico de baras para visualizar la proporción de vuelos por mes según en tipo de motor (**engine**), sin que haya valores *NA*;
+1. Crea un grafico de baras para visualizar la proporción de vuelos por mes según en tipo de motor (**engine**), sin perder datos de vuelos;
 
 ```{r, eval=FALSE, echo=FALSE}
 flights %>% 
@@ -128,15 +131,16 @@ flights %>%
   geom_bar()
 
 ```
+
 Resumen
 ==================================================================
 ![](./img/join-venn.png)
 
 Definiendo multiples variables llave
 ==================================================================
-Hasta ahora estuvimos trabajando con variables unicas. Pero as veces necesitamos juntar mas de una variable, como ocurre con la tabla **weather**.
+Hasta ahora estuvimos trabajando con variables únicas. Pero as veces necesitamos juntar mas de una variable, como ocurre con la tabla **weather**.
   
-Para lograr conocer la condición meteorológica durante el vuelo, tendríamos que unir con **flights** usando las variables **year**, **month**, **day**, **hour**, **origin**.
+Para lograr conocer la condición meteorológica en la origen del vuelo, tendríamos que unir con **flights** usando las variables **year**, **month**, **day**, **hour**, **origin**.
 ```{r}
 flights %>% 
   select(year:day, hour, origin, carrier, origin, dest) %>% 
@@ -145,12 +149,14 @@ flights %>%
 
 Definiendo multiples variables llave II
 ==================================================================
-`r emo::ji("warning")` Por defecto, el parametro "by = NULL" hará la junción de las tablas a partir de las variables que ocurran en ambas. `r emo::ji("+1")`
+`r emo::ji("warning")` Por defecto, el parametro "by = NULL" hará la junción de las tablas a partir de las variables que ocurran en ambas. Tornando esa tarea mucho mas facil `r emo::ji("+1")`  
+A eso llamamos de **join natural**;
 ```{r}
 flights %>% 
   select(year:day, hour, origin, carrier, origin, dest) %>% 
   left_join(weather)
 ```
+
 Ejercicio IV
 ==================================================================
   
@@ -174,12 +180,13 @@ Cuidado! `r emo::ji("warning")`
 ================================================================
 No abuse del **join natural**. Muchas veces las tablas poseen variables con mismo nombre pero con significados distintos!  
   
-  - Ej.: **planes** y **flights** poseen una variable llamda **year**. Pero en **planes** se refire al año de fabricación, mientras en flights, año del vuelo.  
+- Ej.: **planes** y **flights** poseen una variable llamda **year**. Pero en **planes** se refire al año de fabricación, mientras en flights, año del vuelo.  
   
 Otro problema común es cuando las variables llave están nombradas de forma distintas en las tablas.
   
-  - Ej: **airports**, posee la variable "dest" mientras la tble **flights** posee la variable  "faa". Pero ambas significan lo mismo y se tratan de variable llave.
-  Para unir dichas tablas, podríamos usar:
+- Ej: **airports**, posee la variable "dest" mientras la tble **flights** posee la variable  "faa". Pero ambas significan lo mismo y se tratan de variable llave.  
+  
+Para unir dichas tablas, podríamos usar:
 ```{r}
 flights %>% 
     left_join(airports, c("dest" = "faa"))
@@ -189,13 +196,16 @@ Filter join
 ================================================================
 Filtering join empareja las tablas de la misma forma, pero, altera las observaciones y no las variables.  
 
-Hay dos funciones para eso:
-  - semi_join(): mantiene todas las observaciones de x que esteen en y;
-  - anti_join(): remove todas las observaciones de x que esteen en y; 
+Hay dos funciones para eso:  
+  
+- **semi_join()**: mantiene todas las observaciones de x que esteen en y;  
+- **anti_join()**: remove todas las observaciones de x que esteen en y;  
 
-semim_join()
+semi_join()
 ================================================================
-Ej.: Vamos crear un objecto de los diez destinos mas visitados. A partir de estos aeropuertos queremos saber:
+ 
+Ej.: Vamos crear un objecto de los diez destinos mas visitados.  
+A partir de estos aeropuertos queremos saber:
   - Cuales vuelos tuvieron como destino algún de estos aeropuertos:
 ```{r, eval=FALSE}
 top_dest <- flights %>%
@@ -207,7 +217,7 @@ flights %>%
   semi_join(top_dest)
 ```
 
-anti_join
+anti_join()
 ================================================================
 Ahora vamos soponer que queremos conocer los vuelos que no tuvieron como destino ningún de los aeropuertos listados en *top_dest*.
 ```{r}
@@ -215,6 +225,7 @@ flights %>%
   select(year:dep_time, dest, origin) %>%
   anti_join(top_dest)
 ```
+
 Ejercícios V
 ================================================================
   
@@ -226,4 +237,3 @@ anti_join(flights, airports, by = c("dest" = "faa"))
 
 anti_join(airports, flights, by = c("faa" = "dest"))
 ```
-
