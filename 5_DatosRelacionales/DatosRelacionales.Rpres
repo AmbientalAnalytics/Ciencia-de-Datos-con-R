@@ -83,6 +83,9 @@ Mutating join agregará al fin de la tabla (data.frame) variables de otra tabla,
   
 Vamos ver algunos ejemplos:  
 `r emo::ji("warning")`En color están las variables llave y en gris sus valores.
+```{r, out.width = "400px"}
+knitr::include_graphics("./img/original-dfs.png")
+```
 
 inner_join()
 ==================================================================
@@ -94,6 +97,12 @@ Por eso, no es un tipo de fusión recomendad ya que se hace facil perder observa
 flights %>% 
   select(year:day, hour, tailnum, carrier) %>% 
   inner_join(airlines, by = "carrier") # el parametro by indica la variable llave
+```
+
+inner_join(): Resumen
+==================================================================
+```{r, echo=FALSE, out.width = "400px"}
+knitr::include_graphics("./img/inner-join.gif")
 ```
 
 outer join
@@ -135,6 +144,30 @@ flights %>%
 Resumen
 ==================================================================
 ![](./img/join-venn.png)
+
+left_join(): Resumen
+==================================================================
+```{r, echo=FALSE, out.width = "400px"}
+knitr::include_graphics("./img/left-join.gif")
+```
+
+left_join(): Resumen II
+==================================================================
+```{r, echo=FALSE, out.width = "400px"}
+knitr::include_graphics("./img/left-join-extra.gif")
+```
+
+right_join(): Resumen I
+==================================================================
+```{r, echo=FALSE, out.width = "400px"}
+knitr::include_graphics("./img/right-join.gif")
+```
+
+full_join(): Resumen
+==================================================================
+```{r, echo=FALSE, out.width = "400px"}
+knitr::include_graphics("./img/full-join.gif")
+```
 
 Definiendo multiples variables llave
 ==================================================================
@@ -217,13 +250,25 @@ flights %>%
   semi_join(top_dest)
 ```
 
+semi_join(): Resumen
+==================================================================
+```{r, echo=FALSE, out.width = "400px"}
+knitr::include_graphics("./img/semi-join.gif")
+```
+
 anti_join()
 ================================================================
 Ahora vamos soponer que queremos conocer los vuelos que no tuvieron como destino ningún de los aeropuertos listados en *top_dest*.
-```{r}
+```{r, eval=FALSE}
 flights %>% 
   select(year:dep_time, dest, origin) %>%
   anti_join(top_dest)
+```
+
+anti_join(): Resumen
+==================================================================
+```{r, echo=FALSE, out.width = "400px"}
+knitr::include_graphics("./img/anti-join.gif")
 ```
 
 Ejercícios V
