@@ -1,0 +1,184 @@
+Control De Versiones
+========================================================
+author: Felipe Sodré Mendes Barros
+date: 11/11/2018
+autosize: true
+
+e-mail: felipe.b4rros@gmail.com
+
+```{r, echo=FALSE, out.width = "360px"}
+knitr::include_graphics("./img/phd101212s.gif")
+```
+
+De que se trata?
+========================================================
+
+Control de versión es una forma de registrar los cambios (y la evolución) de su codigo a lo largo del tiempo. Es común usarmos algunas estrategias para registrar dichos comandos, como por ejempo, cuando creamos un documento de texto y lo nombramos con informaciones secuenciales que nos indica el orden de los cambios:  
+**Tarea_Geografía1.doc**, **Tarea_Geografía2.doc**, **Tarea_Geografía_FINAL.doc**, **Tarea_Geografía_FINAL_FINALLLLLL.doc**.  
+  
+Pero perciba que se hace fácil equivocarse en relación al nombre. Nos creíamos estar en el fin, pero todavía tuvimos que desarrollar más nuestra tarea...  
+Otra forma común es añadir la fecha de modificación:
+**Tarea_Geografía1_11_18.doc**, **Tarea_Geografía21_11_18.doc**, **Tarea_Geografía29_11_18.doc**.  
+  
+El tema en ambos ejemplos es que estamos duplicando nuestros archivos. Y hay una forma mas interesante de hacer dicho registros de sus codigos.
+
+Benefícios
+========================================================
+El control de versión de su codigo se hará importante cuando:  
+  
+- Vos percibis que su codigo esta con resultado raro que no pasaba antes y querés volver a un punto anterior;  
+- Borrastes un pedazo de codigo, y ahora lo necesitas;  
+- Necesitas presentar lo que hiciste. O querés ver lo que otros hicieron;  
+- Querés probar algunos cambios en su codigo sin tener certeza si andará bien;  
+
+GIT: de que se trata?
+========================================================
+GIT es un sistema de versionamiento creado por Linus Torvalds a permitir el desarrollo de las versiones de linux de forma asyncrona;  
+La idea es que se pueda crear modificaciones, hacer testes sin comprometer la versión **estable**.  
+![](./img/gitLogo.png)
+  
+GIT: Instalación
+========================================================
+  
+1. [Download](https://git-scm.com/downloads)
+1. Configuración  
+  - Nombre de usuário;  
+  - E-mail;  
+```{r, eval=FALSE}
+git config --global user.name "Mona Lisa"
+git config --global user.name
+
+git config --global user.email "email@example.com"
+git config --global user.email
+```
+  
+3 . Configurando RStudio
+
+
+Configurando RStudio
+========================================================
+  
+1. Busca en el menu tools>Global Options
+1. Haga click en Git/SVN
+1. Haga click en "Enable version control interface for RStudio projects"  
+  
+`r emo::ji("warning")` Para usar versionamiento GIT en el RStudio, si o si tenemos que usar el sistema de proyectos.  
+`r emo::ji("bulb")` Eso te obliga a trabajar siempre con carpetas específicas a cada proyecto;  
+`r emo::ji("award")` Tenga siempre en mente: Se hace versión del proyecto. Por eso, no mezcle carpetas! `r emo::ji("skull")`
+
+Configurando RStudio II
+========================================================
+```{r, echo=FALSE, out.width = "400px"}
+knitr::include_graphics("./img/Global1.png")
+```
+
+Empezando un proyecto nuevo con GIT
+========================================================
+![](./img/CreatingProject.png)
+
+Desarrollo del proyecto
+========================================================
+  
+- Vamos ocupar el conjunto de datos `mtcars`;
+- Haga un grafico cualqueira;
+- Guarde tu script;
+
+Proyecto con GIT
+========================================================
+Ahora que ya empezamos a desarrollar nuestro proyecto, vamos mirar un poco a respecto del versionamiento con GIT.  
+Vamos a la opción "commit" del menu "GIT";
+![](./img/RStudioGIT.png)
+
+GIT commit
+========================================================
+En él vemos algunos elementos, de los cuales identificamos el script que empezamos a desarrollar.  
+`r emo::ji("question")` Los archivos marcados con interogración son archivo que no están siendo versionados.  
+Vamos versionar solo los scripts, por ahora. Para eso necesitamos marcar la caja "taged", y el script cambiará a un icono "A" (de 'added'). Pero todavía no terminamos. La idea es siempre marcar un momiento del desarrollo y escribir un mensaje en la ventana "commit message".  
+
+![](./img/commit1.png)
+
+GIT commit II
+========================================================
+Perciba la caja mas abajo. En verde figuran los comandos adicionados.  
+Aora es solo hacer click en "commit".  
+![](./img/commit2.png)
+
+GIT commit III
+========================================================
+Vamos cambiar el grafico anterior.  
+Adicione cualquier otra cosa que tengas interés.  
+Y vamos volver al commit;  
+
+GIT commit IV
+========================================================
+![](./img/commit4.png)
+
+GIT history
+========================================================
+![](./img/history.png)  
+
+GIT log
+========================================================
+![](./img/log.png)  
+
+GitHub
+========================================================
+Todo este tiempo estuvimos haciendo el versionamiento y guardando solamente en nuestra computadora.  
+  
+`r emo::ji("skull")` Pero algo puede pasar, no?! `r emo::ji("skull")`
+Por eso, vamos crear un **repositorio** en la pagina [GitHub](github.com).  
+  
+Allá podremos enviar todo lo que estuvimos versionando de nuestro proyecto y, caso pase algo, lo podremos recuperar.  
+
+GitHub New repository
+==========================================================
+![](./img/githubNewRepo.png)  
+
+RStudio project/Github
+==========================================================
+Ahora vamos empezar desde el principio.  
+  
+Crea un nuevo proyecto, pero usando la opción de control de versión:  
+![](./img/GithubRstudio.png)  
+
+RStudio project y GitHub
+==========================================================
+![](./img/githubRstudio2.png)  
+
+RStudio project y GitHub II
+==========================================================
+Acá tenemos que agregar la **url** del repositorio creado en GitHub.  
+
+![](./img/githubRstudio3.png)  
+
+RStudio project y GitHub III
+==========================================================
+Mire como cambia las opciones del menu **GIT**.  
+![](./img/githubRstudio.png)  
+
+RStudio project y GitHub IV
+===========================================================
+Hacemos todos los pasos anteriores de crear un script, modificarlo, "commitarlo" ...  
+![](./img/githubRstudio5.png)  
+
+RStudio project y GitHub VII
+===========================================================
+Ahora, cuando nos parezca necesario, podemos enviar todas las versiones que hicimos al repositório creado, con la opción **push branch**.  
+![](./img/githubRstudio.png)  
+
+RStudio project y GitHub VII
+===========================================================
+Como está nuestro proyecto en **GitHub**?
+![](./img/GitHubProject.png)
+
+RStudio project y GitHub VI
+===========================================================
+![](./img/GitHubcommits.png)  
+  
+Resumen
+========================================================
+### `r emo::ji("warning")` Control de versión no es backup!  
+### `r emo::ji("book")` Libro: [**GIT Pro**](https://git-scm.com/book/en/v2)  
+### `r emo::ji("book")` Otro libro: [**Happy Git and GitHub for the useR**](http://happygitwithr.com/)  
+### `r emo::ji("sos")` [Más infos](https://support.rstudio.com/hc/en-us/articles/200532077?version=1.1.442&mode=desktop)
+### `r emo::ji("sos")` [Ayuda configuración - BootCamp](https://help.github.com/articles/set-up-git/)

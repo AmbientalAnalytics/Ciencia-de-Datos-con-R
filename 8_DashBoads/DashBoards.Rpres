@@ -1,0 +1,148 @@
+DashBoards
+========================================================
+author: Felipe Sodré Mendes Barros
+date: 16/11/2018
+autosize: true
+
+e-mail: felipe.b4rros@gmail.com
+
+De que se trata?
+========================================================
+Dashbord son paneles donde se puede tener una visión general a cerca de un determinado tema/análisis;  
+  
+Por eso pueden ser traducidos por panel de control, ya que la idea es tener toda la información disponible en forma de graficos, tablas, mapas y etc, para la toma de decisión.
+ 
+Paquete flexdashboard
+=========================================================
+El paquete **flexdashboard** nos facilita la creación de un dashboard interativo, con la posibilidad de usar `htmlwidget` y cupando también el **markdown**.
+```{r, eval=FALSE}
+install.packages("flexdashboard")
+```
+
+Creando un Dashboard
+=======================================================
+Una vez instalada la librería `fexdashboard`, se habilita dentro de las posibilidades de creación de archos de tipo **Markdown** a partir de un **template**, de los cuales endremos **flex Dashbard**.
+![](./img/NewRMarkdown.png)
+
+Entendendo  configuración
+===========================================================
+Tal cual todos archivos **Markdown**, los Dashboards son iniciados por un pedazo de codigo de configuración.  
+  
+```{r, eval = FALSE}
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```
+
+Entendiendo la configuracion
+======================================================
+Por lo general, los paneles son divididos en columnas y líneas, siendo cada companiente especificado por encabezado de nivel 3 (###).  
+![](./img/Encabezado.png)
+
+Entendiendo la configuración II
+==========================================================
+Perciba que para definir una nueva columna se ocupa el patrón (------) informando el ancho que debera tener la columna:
+```{r, eval=FALSE}
+Column {data-width=650}
+-----------------------------------------------------------------------
+```
+
+Entendiendo la configuración III
+==========================================================
+Por defecto, el la formatación (*layout*) esta definida de forma que los componentes rellenen el espacio disponibel en el navegador.
+```{r, eval = FALSE}
+    vertical_layout: fill
+```
+Otra posibilidad es cambiar dicho parámetro a `scroll` y los componentes tendrán su tamaño naturales de forma que, caso sean más grandes que el espacio disponible en el navegador, se habilitará el `scroll` de la pagina para visualizar todo el contenido.
+```{r, eval = FALSE}
+    vertical_layout: scroll
+```
+
+Dashboards de Diamantes
+===================================================================
+Vamos crear un dash board simples con datos de diamantes:
+  
+1. Un grafico de caja con `cut` en el eje `x` y `price` en el eje `y`;
+1. Grafico de caja con `clarity` en el eje `x` y `price`en el eje `y`;
+1. Grafico de  caja con `clarity`en `x` y `carat` en `y`;
+
+`r emo::ji("warning")` No deje de cargar las librerías necesarias para su dashborad en el script!  
+```{r, eval=FALSE}
+library(ggplot2)
+diamonds
+ggplot(diamonds, aes(x = cut, y = price, colour = cut)) +
+  geom_boxplot()
+ggplot(diamonds, aes(x = clarity, y = price, colour = clarity)) +
+  geom_boxplot()
+ggplot(diamonds, aes(x = carat, y = price, group = carat, colour = carat)) +
+  geom_point()
+```
+
+Dashboards de Diamantes II
+===================================================================
+Para crear el Dashboard, basta ejecutar:  
+![](./img/Knit.png)
+Dashboards de Diamantes Interativo
+===================================================================
+Hay una librería muy interesante que permite tornar los graficos interactivos:  
+```{r, eval=FALSE}
+# install.packages("plotly")
+library(plotly)
+```
+  
+Agregaramos a los graficos `ggplotly()`:
+```{r, eval=FALSE}
+ggplotly(
+  ggplot(diamonds, aes(x = carat, y = price, group = carat, colour = carat)) +
+  geom_point()
+)
+```
+O
+```{r, eval=FALSE}
+grafico <- ggplot(diamonds, aes(x = carat, y = price, group = carat, colour = carat)) +
+  geom_point()
+ggplotly(grafico)
+```
+Más configuraciones:
+==========================================================
+Se puede dividir su análisis por temas, y agregando los graficos/análisis por páginas, usando:  
+  
+`Page 1`  
+`===================================== `
+
+Navegador de pagina
+===========================================================
+Siempre que se agregar una pagina, aultomaticamente se agrega una nueva pestaña al Dashboard.  
+Pero, caso vaya trabajar con muchas páginas (más de 5), se sugere agregar un navegador de pagina (o menu de pagina).  
+  
+Con eso se puede dividir nas diferentes paginas en distintas opciones del menu:  
+![](./img/NavegadorDePagina.png)  
+
+Navegador de pagina II
+===========================================================
+
+`Page 1 {data-navmenu="Menu A"}`  
+`=====================================`
+
+
+`Page 2 {data-navmenu="Menu A"}`  
+`=====================================`  
+
+
+`Page 3 {data-navmenu="Menu B"}`  
+`=====================================`  
+
+
+`Page 4 {data-navmenu="Menu B"}`  
+`=====================================`  
+
+Más informaciones:
+==========================================================
+  
+- Hay algunas opciones de configuración. Vale la pena visitar la [pagina oficial de la librería](https://rmarkdown.rstudio.com/flexdashboard/using.html) para más referencias;  
+- [Ejemplos de aplicaciones](https://rmarkdown.rstudio.com/flexdashboard/examples.html)
