@@ -9,22 +9,24 @@ e-mail: felipe.b4rros@gmail.com
 Programa
 ========================================================
   
-1. Funciones `r emo::ji("smile")`
-1. Condicionaes;
+1. Funciones;  
+1. Condicionales;  
+1. loop;
 ```{r}
 library(tidyverse)
 ```
 
 Motivación
 ========================================================
-La posibilidad que crear nuevas funciones nos permite automatizar operaciones que sean rutina en nuestras actividades de análisis de datos, que muchas veces son realizadas con copia/pega de codigos.  
-Las ventajas en se trabajar con funciones son:
+La posibilidad que crear nuevas funciones nos permite automatizar operaciones que sean rutina en nuestras actividades de análisis de datos, que muchas veces son realizadas con copia y pega de codigos.  
+Las ventajas en se trabajar con funciones son:  
   
-1. Se resume actividades a una función con un nombre que resulta facilitar el entendimento de lo que se está haciendo;  
-1. Caso haga falta cambiar algo el la rutina, basta cambiar una o otra cosa de la función;  
+1. Se resume actividades a una función con un nombre que resulta mas facil el entendimiento de lo que se está haciendo;  
+1. Caso haga falta cambiar algo el la rutina, basta cambiar una o otra cosa de la función y ejecutarla nuevamente;  
 1. Se reduce las chances de errores con la copia/pega de varias trechos de datos;  
 
 `r emo::ji("warning")` Considere crear una funcrión siempre que perciba la necesidad de copiar/pegar un trecho de codigo más de dos veces...
+
 Estrucutra
 =========================================================
 
@@ -35,19 +37,21 @@ function.name <- function(arguments)
   some other code
 }
 ```
+
 Standart error
 =======================================================
-como ejemplo practico, vamos crear una función que calcule el error standart:
+como ejemplo practico, vamos crear una función que calcule el error standart:  
 $\sqrt{\mathrm{var}(x)/n}$  
 Para eso, vamos ocupar los datos de animales herbívoros:
 ```{r}
-library(tidyverse)
 datos <- read_csv("./datos/seed_root_herbivores.csv")
 ```
 
 Standart error (cont.)
 =======================================================
-Caso vayamos calcular el error standart del tamaño de los animales, haríamos:
+Caso vayamos calcular el error standart del tamaño de los animales, haríamos:  
+  
+$\sqrt{\mathrm{var}(x)/n}$  
 ```{r}
 datosVar <- var(datos$Height)
 numObs <- length(datos$Height)
@@ -68,9 +72,9 @@ Creando funcion Standart error
 =======================================================
   
 - Para el calculo del stadart error necesitamos de un único conjunto de valores numericos;
-- Vamos calcular la variancia `var()`;  
-- Identificar a cantidad de valores `length`;  
-- Y hacer el calculo de standart error;  
+- A este conjunto de datos, calculamos la variancia `var()`;  
+- Identificamos la cantidad de observaciones `length`;  
+- Y hacemos el calculo de standart error;  
 ```{r, eval=FALSE}
 standart.error <- function(x){
   datosVar <- var(x)
@@ -81,17 +85,18 @@ standart.error <- function(x){
 # ejecutando la función
 standart.error(datos$Weight)
 ```
+
 Ambiente de la función
 =======================================================
 Perciba que en la función, creamos dos variables (datosVar y numObs). Perciba que dichas variables no son incorpoaradas al ambiente global de su proyecto ( “global environment”).
   
-Eso por que las funciones poseen su proprio ambiente que, por a su vez son destruyedos al termino de la función.  
+Eso por que las funciones poseen su proprio ambiente que, por a su vez son destruidos al termino de la función.  
   
 Caso tengas una variable `datosVar` en su *global environment*, el mismo será ignorado por el mismo motivo.
 
 Ejercício I
 =======================================================
-Porque la función resulta en error?
+Porque la función abajo resulta en error?
 Que tenemos que cambiar para que sea bien ejecutada?
 ```{r, eval=FALSE}
 standart.error(y = datos$Weight)
@@ -118,8 +123,8 @@ Buens practicas con funciones
 ========================================================
 La idea de crear funciones es poder ocuparlas otras veces y por eso las misma deben ser desarrolladas de forma independiente del proyecto en que se esta trabajando.  
   
-Una sugerencia es crear un archivo .R para armazenar todas las cunciones creadas.
-De esa forma se puede acedela de forma independente en otros proyectos, ejecutando el codigo:
+Una sugerencia es crear un archivo .R para armazenar todas las funciones creadas (claro, se debe diferenciar por temas y etc).  
+De esa forma se puede accederla de forma independente en otros proyectos, ejecutando el codigo:
 ```{r, eval=FALSE}
 source("~/camino_al_archivo/funcitones.R")
 ```
@@ -128,7 +133,7 @@ Condicionales
 ========================================================
 Para añadir en su codigo testes y condiciones, se utiliza las funciones **if()** y **else**;  
   
-`r emo::ji("warning")` Perciba que el resultado del teste hay que ser si o si de valor **logico** (TRUE o FALSE)
+`r emo::ji("warning")` Perciba que el resultado del teste hay que ser **si o si** **logico** (TRUE o FALSE)
 
 ```{r, eval=FALSE}
 if (condition) {
@@ -142,11 +147,11 @@ Condicionales else if
 Caso sea necesario trabajar con mas de una condición, se puede usar la función **else if()**:
 ```{r, eval=FALSE}
 if (this) {
-  # do that
+  # haga algo
 } else if (that) {
-  # do something else
+  # haga otra cosa
 } else {
-  # 
+  # haga otra cosa II
 }
 ```
 
@@ -157,20 +162,20 @@ Condicionales y NA
 ```{r, eval=FALSE}
 val <- NA
 if(val){
-  print(val)
+  print("OK")
 }
 ```
 
 Ejercício III
 ========================================================
-A apartir del codigo abajo, dig que ellos hacen y como podríamos nombrarlos.
+A apartir del codigo abajo, idenitifique lo que ellos hacen y como podríamos nombrarlos.
 ```{r, eval=FALSE}
-f2 <- function(x) {
+f1 <- function(x) {
   if (length(x) <= 1) return(NULL)
   x[-length(x)]
 }
 
-f3 <- function(x, y) {
+f2 <- function(x, y) {
   rep(y, x)
 }
 ```
@@ -193,14 +198,14 @@ teste()
 
 loop
 =======================================================
-Vamos suponer que necesitamos saber la mediana de los valores de las columnas No.stems, Height, Weight, Seed.heads de los datos que estuvimos trabajando.  
+Vamos suponer que necesitamos saber la mediana de los valores de las columnas **No.stems**, **Height**, **Weight**, **Seed.heads** de los datos que estuvimos trabajando.  
 Una forma de hacer eso, sería usarndo un "for loop".  
 En R, un loop se crea de la seguinte forma:
 ```{r, eval = FALSE}
-output <- vector("double", ncol(datosReducidos))  # 1. output 
+output <- vector("double", ncol(datosReducidos))  # 1. objeto de salida 
 # opcional pero muy importante: para armazenar el resultado a cada iteración
-for (i in 1:10) {            # 2. sequence
-  output[[i]] <- i * i      # 3. body
+for (i in 1:10) {            # 2. secuencia
+  output[[i]] <- i * i      # 3. cuerpo: que hacer en el loop
 }
 output
 ```
@@ -214,7 +219,7 @@ Algunas sugerencias para desarrollar un loop son:
 1. Probar el indice antes de ejecutar;
 1. Certificarse que no ha creado un loop infinito;
 1. usar el print() para certificarse de los resultados mientras el loop esta ejecutando
-1. certificarse que el objecto (caso necesario) que va recibir el resultado no esta sobrescribiendo el valor anterior
+1. certificarse que el objeto (si necesario) que va recibir el resultado no esta sobrescribiendo el valor anterior.  
 ```{r}
 NombrePlot <- NULL
 for (i in unique(datos$Plot)){
@@ -229,7 +234,7 @@ Loop: Ejercício V
 ===============================================================
   
 1. Crea un for loop para calcular el promedio de cada columns del conjunto de datos mtcars.
-1. Crea un loop que permite leer cada archivo .csv existente en la carpeta ./datos y agregalo a un objecto data.frame creado antes. Sugerencia, considerar este comando antes de empezar: 
+1. Crea un loop que permite leer cada archivo .csv existente en la carpeta ./datos y agregalo a un objeto data.frame creado antes. Sugerencia, considerar este comando antes de empezar: 
 ```{r, eval=FALSE}
 files <- dir("datos", pattern = ".csv$", full.names = TRUE)
 output <- data.frame()
