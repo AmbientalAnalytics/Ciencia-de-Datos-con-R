@@ -1,0 +1,117 @@
+Regresión espacial
+========================================================
+author: Felipe Sodré Mendes Barros
+date: 24/11/2018
+autosize: true
+
+e-mail: felipe.b4rros@gmail.com
+
+De que se trata?
+========================================================
+Se trata de aplicar análsis estadísticas considerando no solo variables numéricas/categoricas, pero también elementos espaciales;  
+
+Hay muchas apicaciones, de las cuales destaco el uso para biodiversidade:
+  
+- Se hace una regresión para ajustar un modelo e identificar las variables climaticas más importantes para la distribuición espacial de la espécie que se está trabajando;
+- Con base en el ajuste se puede hacer un modelo predictivo de **probabilidad** de distribuición de dicha espécie = distribuición potencial;
+
+Qué necesitamos?
+========================================================
+Os dados básicos para a modelagem potencial de espécies são:  
+  
+- Dados bióticos  
+- Dados abióticos  
+
+Para facilitar, utilizaremos dados bióticos (bradypus.csv) e abióticos existentes no paco DISMO.  
+
+Librerías
+========================================================
+```{r}
+# install.packages("dismo")
+library(dismo)
+```
+
+Datos bióticos
+========================================================
+Datos con la distribuición conocida de dicha espécie:  
+```{r}
+bradypus <- read.csv("./datos/bradypus.csv")
+# Dejamos 'bradypus' solamente con coordenadas
+bradypus <- bradypus[,2:3]
+head(bradypus)
+```
+
+Datos abióticos
+========================================================
+Datos de variables climáticas: espaciales `r  emo::ji("earth") `
+```{r}
+# Creamos el camino a los datos ambientales
+files <- list.files(path=paste(system.file(package="dismo"),
+'/ex', sep=''), pattern='grd', full.names=TRUE )
+# Definimos los rasters como objeto 'predictors'
+predictors <- stack(files)
+# remover el dato de bioma
+predictors <- dropLayer(predictors,'biome')
+plot(predictors)
+```
+
+Visualizando los datos
+========================================================
+```{r}
+plot(predictors, 1)
+points(bradypus, bg='red', cex=1,pch=21)
+```
+
+Datos ambientales de los puntos
+========================================================
+ahora necesitamos extraer los valores que tenemos de las variables ambientales a cada punto de ocurrencia de la espécie.
+```{r}
+bradypus <- extract(predictors, bradypus)
+
+head(bradypus)
+```
+Datos de entrenamiento y teste
+========================================================
+Vamos dividir nuestra muestra en datos de entrenamiento y teste  
+```{r}
+bradypus <- as.data.frame(bradypus)
+bradypus$presencia <- 1
+```
+
+Puntos aleatorios
+========================================================
+Vamos generar puntos aleatorios que son nuestro modelo base  
+```{r}
+backg <- randomPoints(predictors, n=1000)
+colnames(backg) = c( 'lon' ,  'lat' )
+```
+
+Visualizando II
+========================================================
+```{r}
+plot(predictors, 1)
+points(backg, pch= '-' ,  cex=0.5, col= 'black' )
+```
+
+Datos ambientales aleatorios
+========================================================
+```{r}
+backg <- extract(predictors, backg)
+backg <- as.data.frame(backg)
+backg$presencia <- 0
+head(backg)
+```
+
+Modelo!!!!
+========================================================
+```{r}
+pb <- rbind(bradypus, backg)
+m1 <- glm(presencia ~ ., data=pb)
+summary(m1)
+```
+Predicción!!!!
+========================================================
+```{r}
+p <- predict(predictors, m1)
+plot(p, main = "Distribuición potencial bradypus")
+```

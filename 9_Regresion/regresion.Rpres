@@ -1,0 +1,246 @@
+Regresion
+========================================================
+author: Felipe Barros
+date: 20/11/2018
+autosize: true
+
+e-mail: felipe.b4rros@gmail.com  
+
+Regresión: De que se trata?
+========================================================
+Es una técnica estadística utilizada para estudiar la relación entre variables,
+o el efecto que una (o varias) variables (variables predictoras) pueden tenere sobre otra (variable dependiente o o respuesta).  
+
+Una vez que se identifica dicha relación, puede ser util para predecir con un determinado grado de 'precisión' (error de los mínimos quadrados) los valores de una variable a partir de otra.  
+  
+Que la recta se ajuste a los datos no significa que el modelo sea correcto;
+
+- Regresión lineal 
+    - $Y = \beta_{0} + \beta_{1}X_{1} + ... + \beta_{n}X_{k}$  
+    - Para una única variable sería (lineal simple):  
+    $Y = mx + n$  
+
+Regresión lineal simple
+========================================================
+Para hacer el análisis de regresión lineal simple vamos usar un conjunto de datos ambientales relacionados al clima (cambio climatico):
+
+```{r}
+library(ggplot2)
+cc <- read.csv("./datos/climate_change.csv")
+head(cc)
+```
+
+Regresión lineal simple II
+========================================================
+Vamos mirar la relación entre CO2 y Temperatura:
+```{r, eval = FALSE}
+ggplot(cc, aes(Temp, CO2)) +
+  geom_point()
+```
+
+Entrenamiento X teste
+========================================================
+Vamos dividir nuestro conjunto de datos en entrenamiento y teste:  
+Vamos suponer que queremos entrenar el modelo con los datos anteriores a 2006 y hacer una predicción para el año seguiente.
+```{r}
+train <- subset(cc, Year <= 2006)
+test <- subset(cc, Year > 2006)
+```
+
+Creación modelo
+=======================================================
+
+```{r}
+LinealSimple <- lm(Temp ~ CO2, data = train)
+```
+
+Modelo grafico
+=======================================================
+```{r, eval=FALSE}
+ggplot(train, aes(CO2, Temp)) + 
+         geom_point() +
+         geom_abline(intercept = coef(LinealSimple)[1], slope = coef(LinealSimple)[2], colour = "red")
+```
+
+Calidad del modelo
+=========================================================
+Aunque la recta sea la mejor disponible, esta puede seguir siendo un ajuste terrible de los datos.  
+Por eso, debemos verificar la eficiencia del modelo a la hora de explicar la variable dependiente:
+```{r}
+summary(LinealSimple)
+```
+
+Regresión Lineal Multiple
+=========================================================
+Ahora vamos usar más variables a nuestra análisis.  
+Podemos agregar todas las variables de esta forma:  
+```{r}
+fit <- lm(Temp ~ ., data=train)
+summary(fit)
+```
+
+Regresión Lineal Multiple II
+=========================================================
+Vamos retirar algunas variables que no tenian significancia:  
+```{r}
+fit2 <- lm(Temp ~ MEI + CH4 + N2O + CFC.11 + CFC.12 + TSI + Aerosols, data=train)
+summary(fit2)
+```
+
+Regresión Lineal Multiple III
+=========================================================
+Hay una función para definir cuales variables són mas significativas de forma iterativa y usando el teste AIC como parámetro.
+```{r}
+fit3 <- step(fit)
+summary(fit3)
+```
+
+Regresión Lineal Multiple IV: Predición
+=========================================================
+Ahora que tenemos un modelo que ustiliza las mejores variables, vamos hacer la predición:  
+```{r}
+pred <- predict(fit3, newdata=test)
+```
+
+Regresión Lineal Multiple VI: Validando la predición
+=========================================================
+Ahora tenemos que validar nuestra predición, calculando R²  
+```{r}
+SSE <- sum((pred - test$Temp)^2)
+SST <- sum((mean(train$Temp) - test$Temp)^2)
+R2 <- 1 - SSE/SST
+R2
+```
+
+Regresión logistica
+===========================================================
+La regresión logísta se debe ser usada para análisis relacionadas a variables binarias (o categoricas), con solamente dos posibilidades.  
+No se uede usar regresión linear ya que la misma no restringe su resultado a valores entre 0 y 1.
+
+![](./img/linear_vs_logistic_regression.jpg)
+
+Datos
+=============================================================
+```{r}
+admision <- read.csv("https://stats.idre.ucla.edu/stat/data/binary.csv")
+head(admision)
+# GRE (Graduate Record Exam scores), 
+# GPA (grade point average) and 
+# prestige of the undergraduate institution, effect admission into graduate school
+```
+
+Visualizando una relación
+=======================
+```{r, eval=FALSE}
+ggplot(admision, aes(gpa, admit)) + 
+  geom_point()
+```
+
+Preparado datos
+=============================================================
+Vamos cambiar el rank para factor ya que se trata de una variable categorica y generar el modelo.
+El parámetro `family` describe la distribuición de los datos, que pueden ser:
+  
+- Binomial;
+- gaussian;
+- poisson;
+- etc;
+```{r}
+admision$rank <- factor(admision$rank)
+train <- admision[1:350,]
+test <- admision[351:400,2:4]
+fitglm <- glm(admit ~ gre + gpa + rank, data = train, family = "binomial")
+```
+
+Resultado del modelo
+============
+```{r}
+summary(fitglm)
+#Para cada unidade agregada a la variable gre, el log de admisión (contra no adimision) aumenta en 0.002.
+```
+
+Predición GLM
+============
+```{r}
+test$ProbGLM <- predict(fitglm, newdata = test, type = "response")
+head(test)
+```
+
+Visualizando GLM
+============
+```{r, eval=FALSE}
+ggplot(test, aes(x = rank, y = Prob)) + 
+  geom_boxplot()
+```
+
+Decision tree
+====================
+Se puede realizar clasificación o regresión.  
+Clasificación irá determinar si habría admisión o no, mientras la regresión informa la probablidad de admisión y no admisión.  
+Cada rama se basa en valores que disminuyen indices como la **suma de los errores quadraticos**.  
+![](./img/decision-trees-1.png)  
+
+Decision tree
+====================
+
+![](./img/decisiontree2.png)  
+
+Decision tree: rpart
+====================
+```{r, eval=FALSE}
+# usando la librería: rpart
+# install.packages("rpart")
+library(rpart)
+#install.packages("rpart.plot")
+library(rpart.plot)
+
+# creando el modelo (ajuste) 
+fitrpart <- rpart(admit ~ ., data = train,
+  	method="class")
+```
+Decision tree: rpart II
+====================
+```{r, eval=FALSE}
+print(fitrpart) # display the results 
+summary(fitrpart) # detailed summary of splits
+
+# plot tree 
+prp(fitrpart, uniform=TRUE, 
+  	main="rpart tree")
+```
+
+Decision tree: rpart III (predición)
+====================
+```{r, eval=FALSE}
+# make predictions
+test$rpart <- predict(fitrpart, test)
+head(test)
+```
+
+Decision tree II: tree
+====================
+```{r, eval=FALSE}
+# Tree
+# install.packages("tree")
+library(tree)
+fittree <- tree(admit ~ gre + gpa + rank, data = train)
+summary(fittree)
+
+test$tree <- predict(fittree, test) # gives the probability for each class
+head(result)
+plot(fittree)
+text(fittree, cex=.75)
+```
+
+Decision tree III: RandomForest
+================
+```{r, eval=FALSE}
+library(randomForest)
+
+# fit model
+fitrf <- randomForest(admit ~ gre + gpa + rank, data = train, ntree = 7)
+
+# make predictions
+test$rf <- predict(tree.model, test)
+head(test)
+```
