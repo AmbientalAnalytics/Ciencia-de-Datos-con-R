@@ -1,0 +1,269 @@
+Minería de Texto
+========================================================
+author: Felipe Sdoré Mendes Barros
+date: 26/11/2018
+autosize: true
+
+e-mail: felipe.b4rros@gmail.com  
+
+Para que sirve?
+========================================================
+La minería de texto busca analisar diferentes forma de texto con el objetivo de bindar conocimiento arespecto de dicho texto de forma rápida;
+En general se puede contestar las seguintes preguntas:  
+  
+-  ¿Cuáles palabras han sido más utilizadas por la población?
+-  ¿Qué sentimientos han sido predominantes? ¿Positivos, negativos?
+-  ¿Cómo han cambiado los sentimientos a través del tiempo?
+
+Librerías
+========================================================
+```{r}
+library(rtweet)
+library(tidyverse)
+library(lubridate)
+# text mining library
+library(tidytext)
+library(wordcloud2)
+```
+
+Creando una app
+========================================================
+Antes de mas nada, hay que tener una cuenta en Twitter, claro.  
+Pero además de eso, para poder utilizar su API para acceder a los twiits, tenemos que registrar una aplicación en la [pagina](https://dev.twitter.com/);  
+![](./img/app1.png)  
+  
+![](./img/app2.png)
+
+Creando una app II
+========================================================
+Una vez que tengamos una app creada, necesitaremos acceder a los **tokens** de seguridad:  
+![](./img/app3.png)
+
+rtweet
+========================================================
+Más infos a respectod e la creación de la app para acceder a lso datos de twitter:  
+```{r, eval=FALSE}
+vignette("auth")
+```
+
+Preparando la conección
+========================================================
+Preparando algunos objetos para descargar los twitts: 
+```{r, eval = FALSE}
+# Adding parameters Twitter
+consumer_key <- ""
+consumer_secret <- ""
+access_token <- ""
+access_secret <- ""
+create_token(
+  app = "ciencia de datos con R",
+  consumer_key,
+  consumer_secret,
+  access_token,
+  access_secret)
+```
+
+Buscando tweets
+=================
+```{r, eval = TRUE}
+## search for 18000 tweets using the rstats hashtag
+#rt <- search_tweets( "#bocavsriver", n = 18000, include_rts = FALSE)
+#write_as_csv(rt, "./datos/TweetsBocaVCRiver.csv")
+
+# Vamos usar los datos descargados
+rt <- read_csv("./datos/TweetsBocaVCRiver.csv")
+```
+
+Conociendo el contenido
+============================
+```{r}
+head(colnames(rt))
+rt
+```
+
+Cantidad de twitts
+============================
+Cantidad de twitts a cada tres horas:  
+```{r}
+ts_plot(rt, "3 hours") +
+  ggplot2::theme_minimal()
+```
+
+Convertiendo fechas
+================
+```{r}
+rt <- 
+  rt %>%
+  mutate(Dia = day(created_at),
+         Mes = month(created_at),
+         Hora = hour(created_at),
+         text = tolower(text))
+```
+
+Cargando lexico sentimentos
+=============
+```{r}
+afinn <- read.csv("./datos/lexico_afinn.en.es.csv", stringsAsFactors = F, fileEncoding = "latin1") %>% 
+  tbl_df()
+head(afinn)
+```
+
+Convertiendo texto a palabras
+===================
+Convertiendo texto para palabra y juntando con lexico affin
+```{r}
+tuits_palabras <- 
+  rt %>%
+  unnest_tokens(input = "text", output = "Palabra") %>% # separa cada palabra del texto
+  inner_join(afinn, ., by = "Palabra") %>% # join con lexico es
+  mutate(Tipo = ifelse(Puntuacion > 0, "Positiva", "Negativa")) %>% 
+  rename("Usuario" = screen_name)
+tuits_palabras
+```
+
+Removendo "stopword"" de la análisis
+====================
+```{r}
+stopword <- stopwordslangs %>% filter(lang == "es") %>% select(word)
+tuits_palabras <- tuits_palabras %>% filter(! Palabra %in% stopword$word )
+```
+
+Análisis exploratoria
+======================
+Cuantas palabras distintas (exitente en el dicionario) puede haber sido usada por usuário?
+```{r}
+tuits_palabras %>%
+  group_by(Usuario) %>% 
+  distinct(Palabra) %>% 
+  count() %>% 
+ arrange(desc(n))
+```
+
+Cuales fueron las palabras más usadas?
+======================
+```{r, eval=FALSE}
+tuits_palabras %>%
+  group_by(Palabra) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2()
+```
+
+Se puede dividir en positivas/negativas?
+==========================
+Considerando el ejenplo anterior como lo haría solo para palabras positivas? y negativas?
+```{r, eval=FALSE, echo=FALSE}
+tuits_palabras %>%
+  filter(Tipo ==  "Negativa") %>%
+  count(Palabra) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2()
+```
+
+Se puede dividir en positivas/negativas? II
+==========================
+```{r, eval=FALSE, echo=FALSE}
+tuits_palabras %>%
+  filter(Tipo ==  "Positiva") %>%
+  count(Palabra) %>% 
+  arrange(desc(n)) %>% 
+  wordcloud2()
+```
+
+Cantidad palabras positivas/negativas
+===============
+Como podrías hacer para ver la cantidad de veces que una palabra se repite?
+Pero diferenciando positivas/negativas?
+```{r, eval=FALSE, echo=FALSE}
+tuits_palabras %>%
+  filter(Tipo ==  "Positiva") %>%
+  count(Palabra) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:5)
+
+tuits_palabras %>%
+  filter(Tipo ==  "Negativa") %>%
+  count(Palabra) %>% 
+  arrange(desc(n)) %>% 
+  slice(1:5)
+```
+
+Visualizando mejor las palabras positivas y negativas
+================
+Que tipo de palabra se usó más? Positivas o negativas?
+```{r}
+tuits_palabras %>%
+  group_by(Tipo) %>%
+  count(Palabra, sort = T) %>%
+  arrange(desc(n)) %>% slice(1:10) %>%
+  ggplot(aes(Palabra, n, fill = Tipo)) +
+  geom_col() +
+  facet_wrap( ~Tipo, scales = "free") +
+  coord_flip()
+```
+
+Cual sentimiento por día/hora?
+================
+
+```{r}
+puntaje_hora <-
+  tuits_palabras %>%
+  group_by(status_id) %>% # para analisar promedio por msg
+  mutate(Promedio = mean(Puntuacion)) %>%
+  group_by(Dia, Hora) %>%
+  summarise(Promedio = mean(Puntuacion))
+
+puntaje_hora %>% 
+  ggplot(aes(Hora, Promedio)) +
+  geom_smooth() +
+  facet_wrap(~Dia)
+```
+
+Cual sentimiento por día?
+================
+Teniendo como base el ejercício anterior, como lo haría por día?
+```{r, echo=FALSE}
+puntaje_hora %>%
+  summarise(Promedio = mean(Promedio)) %>% 
+  ggplot(aes(Dia, Promedio)) +
+  geom_line()
+```
+
+Quien posee sentimentos más negativo?
+================
+En nuestra base de datos, tenemos la fuente del twitt (*source*), que ientifica si el twitts fué publicado de un telefono (y cual teléfono: android/Iphone) o por la web convencional.  
+
+Como cambia el sentimiento entre ellas?  
+```{r}
+top_source <- tuits_palabras %>%
+  group_by(source) %>%
+  count() %>% 
+  arrange(desc(n)) %>% 
+  filter(n >=24)
+
+tuits_palabras %>% 
+  right_join(top_source, by ="source") %>% 
+  group_by(source) %>%
+  summarise(Promedio = mean(Puntuacion)) %>% 
+  ggplot(aes(source, Promedio, fill = "Negativa")) + 
+  geom_col()
+```
+
+Quales fueron las palabras más usadas en cada dispositivo?
+============================
+```{r}
+tuits_palabras %>%
+  right_join(top_source, by ="source") %>% 
+  group_by(Tipo, source) %>%
+  count(Palabra, sort = T) %>% slice(1:10) %>%
+  ggplot( aes(Palabra, nn, fill = Tipo)) +
+  geom_col() +
+  facet_grid( source ~ Tipo, scales = "free") +
+  coord_flip() 
+```
+
+Más infos
+=============
+  
+  - librería [rtweet](https://rtweet.info/)  
+  - [smappR](https://github.com/SMAPPNYU/smappR)
