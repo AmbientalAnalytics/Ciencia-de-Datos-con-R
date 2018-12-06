@@ -1,0 +1,292 @@
+Clase Shiny Web app
+========================================================
+author: Felipe Sdoré Mendes Barros
+date: 26/11/2018
+autosize: true
+
+e-mail: felipe.b4rros@gmail.com  
+
+De que se trata?
+========================================================
+Shiny es un de los multiplos documentos que se puede crear con markdown;  
+Pero su objectivo es un poco distinto de los que yá vimos.  
+
+Shiny sirve para desarrollarmos una aplicación Web para análisis y visualización de datos. La diferencia con **dashboard** es la posibilidad que Shiny trae de responder a cambios en parámetros de configuración;  
+
+Librerías
+========================================================
+Para empezar, vamos usar apenas la librería **shiny**:
+```{r}
+#install.packages("shiny")
+library(shiny)
+```
+
+Creando una app
+==========================================================
+Para crear una app, basta ir en "crear" y buscar la opción "Shiny Web App";  
+![](./img/CreandoApp1.png)  
+
+Creando una app II
+===============
+Una aplicación shiny, puede estar desarrollada en un único archivo, o puede estar dividido en (dos) multiples archivos. La idea es, a partir del momento en que tengas una app compleja, pueda dividir el archivo de la aplicación en dos seguindo la propuesta:
+  
+- **Vista/interfaz**: Donde se configura los elementos de **Input** y **Output**.  
+- **Controlador**: Donde se hace la programación de como los **Input** serán usados, los análsisis necesários para producir los **output** que quedarán en la **interfaz**;  
+![](img/CreandoApp2.png)  
+
+Estructura de la app
+========================================================
+Por defecto la aplicación shiny creada ya viene con un ejemplo.  
+
+Vamos ejecutarlo para probar y ver de que se trata. Para eso, basta hacer click en "run app"  
+![](./img/CorrendoApp.png)  
+Perciba que esa opción solo esta disponible en el archivo shiny. Rstudio percibe que se trata de una app shiny, por más que sera un **script.R** .  
+
+APP ejemplo
+==========
+Perciba también que la configuracion visual de la app cambia de acuerdo al tamaño de la ventana que estamos usando.  
+![](img/app1.png)
+
+App ejemplo II
+==========
+![](img/app2.png)
+
+Entendiendo la app
+==========
+Toda aplicación shiny tiene dos elementos:  
+  
+- fluidPage (función): Que puede ser entendida como **interfaz de usuário** o **vista**. Esta está dividida en tres funciones:  
+  - **titlePanel**: Titulo de la aplicación;  
+  - **sidebarLayout**: que sería usado para crear en menú lateral y informar las herramientas de **input** (perciba el **sliderInput**);  
+  - **mainPanel**: Donde se informa que deberá figurar en la pagina principal (perciba el **plotOutput**);  
+- server (función a ser creada):  
+
+Entendiendo la app II
+==========
+
+- fluidPage (función);
+- server (función a ser creada):  
+  - El server sería el controlador. Él  recibe el **input** definido en la **fluidPage** y debe retornar el **output** a ser inclydo en la pagina principal. Perciba:
+    - **output$distPlot** (distPlot es la ID del output);
+    - **input$bins** (bins es la ID del input); 
+    - **renderPlot()**: deberá presentar el grafico al final en la sección definida en fluidpage;  
+
+Entendiendo la app III
+=============
+ShinyApp ejecuta la aplicación definiendo los elementos esenciales: ui (fluidPage) y server;   
+```{r, eval=FALSE}
+shinyApp(ui = ui, server = server)
+```
+
+Entendiendo la app IV
+=============
+Que es el objeto **faithful**?  
+
+Modificando la app I
+=============
+Vimos que el objeto **faithful** en un dato ya cargado en la app...
+Y si lo cambiamos a otro conjunto de datos?
+Y se ocupamos los datos de diamantes, para identificar el histograma de sus precios?  
+
+Vamos cargar las librerías necesárias y hacer las modificaciones:
+```{r, eval=FALSE}
+library(ggplot2)
+library(tidyverse)
+diamonds
+
+# Cambie el titulo:
+titlePanel("Old Faithful Geyser Data")
+# cambie la variable x
+x    <- faithful[, 2]
+```
+
+Modificando la app II
+=============
+Ahora vamos decir que queremos  seguir analisando el histograma de precios, pero queremos que haya la posibilidad de filtrar según el corte (cut) del diamante...
+Como podríamos hacer? Que input podríamos usar?  
+Hecha un vistazo al [shiny cheatcheet](https://shiny.rstudio.com/images/shiny-cheatsheet.pdf) para identificar que tipo de input podríamos ocupar;    
+
+Yo decidi por usar un **selectInput()**; En él ahy una opción **choices** para definir las opciones...  
+como podría hacer para que figuren los datos de corte de los diamantes?
+
+Modificando la app III
+=============
+
+```{r, eval=FALSE}
+selectInput("selectCut",
+                     "Select cut category:",
+                     choices = unique(diamonds$cut))
+```
+
+Modificando la app IV
+=========
+Buenísimo. Hasta ahora creamos el **Input**.  
+![](img/ModificandoApp.png)  
+Pero todavía falta hacer con que el grafico se altere en función del **Cut** selecionado.  
+Para eso, vamos crear la programación necesaria en **server**;  
+
+Modificando la app V
+===================
+
+```{r, eval=FALSE}
+# generate bins based on input$bins from ui.R
+diamonds <- diamonds %>% 
+  filter(cut == input$selectCut)
+x    <- diamonds$price
+bins <- seq(min(x), max(x), length.out = input$bins + 1)
+```
+
+Modificando la app V.b
+===================
+Vamos aprovechar y cambiar a ggplot?  
+como lo harias?  
+```{r, eval=FALSE, echo=FALSE}
+ggplot(diamonds, aes(x = depth)) + 
+       geom_histogram(bins = input$bins)
+```
+Perciba que los elementos anteriores ya no hacen falta;  
+
+Modificando la app VI
+===================
+Vamos decir que además de los gráficos que ya tenemos, necesitamos hacer un boxplot de **clarity** en función de los **precios**;  
+
+`r emo::ji("question")` Que necesitamos hacer `r emo::ji("question")`  
+  
+- En la interfaz;
+- En server;  
+
+Modificando la app VII
+===================
+- Agregar un **renderPlot** más en **mainpanel**; 
+
+```{r, eval=FALSE}
+mainPanel(
+         plotOutput("distPlot")
+         plotOutput("boxPlot")
+      )
+```
+
+Modificando la app VIII
+==============
+Tendremos que:  
+- Generar el plot en server;
+```{r, eval=FALSE}
+output$boxPlot <- renderPlot({
+     diamonds <- diamonds %>% 
+       filter(cut == input$selectCut)
+     ggplot(diamonds, aes(clarity, price, fill = clarity)) + 
+       geom_boxplot()
+   })
+```
+
+Agregando una pestaña
+=========================
+Hasta ahora estuvimos haciendo análisis en función de los precios.  
+Vamos suponer que necesitamos analisar otros elementos, como la profundudad de los diamantes (**depth**).  
+
+Para no quedar muy confusa nuestra aplicación, vamos disponibilizarlos en otra pestaña manteniendo el panel de entrada de datos;  
+
+`r emo::ji("warning")` O sea, queremos agregar las pestañas solo en el **mainPanel**, hacendo con que la seleción de **cut** e definición de bins se mantenga siempre para las dos análisis;  
+
+Agregando una pestaña I (mainPanel)
+=========================
+Para agregar las pestañas, vamos agregar luego después de **mainPanel**, la función **tabsetPanel()**. Esa función irá permitir que se cree diferentes pestañas;  
+Ahora vamos agregar las pestañas con **tabPanel()**, que debe llevar un **titulo** (string), y todos los *Output que sean pertinentes;  
+
+Agregando una pestaña II (mainPanel)
+=========================
+ **Resultado:**
+```{r, eval=FALSE}
+mainPanel(
+  tabsetPanel(
+    tabPanel("Precios", 
+             plotOutput("distPlot"),
+             plotOutput("boxPlot")),
+    tabPanel("Depth", 
+             plotOutput("depthPlot"),
+             plotOutput("depthBoxPlot")
+             )
+    )
+  )
+```
+
+Agregando una pestaña III (server)
+=========================
+En **server** donde hacemos los análisis y creamos los gráficos a seren incorporados en la pagina, **no hace falta indicar nada relacionado al panel** ya que el mismo será solicitado por la **interfaz**.  
+Lo que sí hay que hacer es nombrar bien **los Output** para que estén de acuerdo a los informados en tabPanel.  
+
+```{r, eval=FALSE}
+output$depthPlot <- renderPlot({
+  # generate bins based on input$bins from ui.R
+  diamonds <- diamonds %>% 
+    filter(cut == input$selectCut)
+  x    <- diamonds$depth
+  bins <- seq(min(x), max(x), length.out = input$bins + 1)
+     
+  # draw the histogram with the specified number of bins
+  hist(x, breaks = bins, col = 'darkgray', border = 'white')
+  })
+  output$depthBoxPlot <- renderPlot({
+    diamonds <- diamonds %>% 
+      filter(cut == input$selectCut)
+    ggplot(diamonds, aes(clarity, depth, fill = clarity)) + 
+      geom_boxplot()
+    })
+```
+
+Mejorando los gráficos
+==================
+Además de los gráficos en ggplot, se puede agregar gráficos de **plotly**.  
+Pero para eso, tendremos que cambiar:  
+  
+- plotOutput por **plotlyOutput**,  
+- renderPlot por **renderPlotly**  
+- usar **ggplotly** para crear los gráficos...  
+- y, laro, cargar la librería!
+
+Mejorando los gráficos (ejemplo)
+==================
+```{r, eval=FALSE}
+library(plotly)
+
+# en tabPanel
+plotlyOutput("distPlot"),
+plotlyOutput("boxPlot")),
+
+# en server
+output$distPlot <- renderPlotly({
+      # generate bins based on input$bins from ui.R
+      diamonds <- diamonds %>% 
+        filter(cut == input$selectCut)
+      # draw the histogram with the specified number of bins
+      grafico1 <- ggplot(diamonds, aes(price)) + 
+        geom_histogram(bins = input$bins)
+      ggplotly(grafico1)
+   })
+```
+
+Resumen  
+=============
+ Arquitetura:  
+
+- app (interfaz de usuario);  
+- server (sería como el controlador);  
+- shiny app();  
+
+Resumen II
+===========
+Inputs - Elementos con los cuales serán interactuados;  
+Output - Respuesta al cambio en el input;
+
+En fluidPage():  
+
+- Se define como será la entrada de parametros: sliderInput(); checkboxInput()...  
+- Se crea espacio para los outputs, que pueden ser plotOutput(), tableOutput()....  
+
+Resumen III
+============
+ En la función server:  
+tres reglas:  
+- Guarda objecto para disponibilizar como output (**output$ID**);
+- Construye objetos para presentar (renderizar)  **reder*()**;  
+- Ocupa valores del input con: **input$ID**;
